@@ -1,0 +1,10 @@
+target
+mat_data.txt
+save_state
+*png~
+/quant.ew/files/system/player/tmp/
+/quant.ew/ewext*.dll
+
+# Nix
+/result
+/result-man
