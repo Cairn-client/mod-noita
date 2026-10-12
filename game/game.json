@@ -8,6 +8,7 @@
   "exe": "noita.exe",
   "description": "Play Noita together. Noita Entangled Worlds shares one world between players: their positions, health, perks, wands, enemies and even the pixels of the cave.",
   "accent": "#E8A35A",
+  "ownSession": true,
   "hostSteps": [
     "Download the mod above. Cairn puts it in Noita's folder and keeps it up to date.",
     "Press Play. Noita Entangled Worlds' own window opens.",
