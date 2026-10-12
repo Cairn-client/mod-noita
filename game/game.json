@@ -8,6 +8,13 @@
   "exe": "noita.exe",
   "description": "Play Noita together. Noita Entangled Worlds shares one world between players: their positions, health, perks, wands, enemies and even the pixels of the cave.",
   "accent": "#E8A35A",
+  "images": {
+    "background": "noita.jpg",
+    "logo": "noita-logo.png",
+    "hero": "noita-hero.jpg",
+    "poster": "noita-poster.jpg",
+    "screenshots": [ "noita-shot-1.jpg", "noita-shot-2.jpg" ]
+  },
   "ownSession": true,
   "setup": [
     { "kind": "steam-running" },
