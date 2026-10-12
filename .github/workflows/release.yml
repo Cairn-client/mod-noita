@@ -1,6 +1,8 @@
 name: release
 
-on: [push, pull_request]
+# CAIRN: the upstream build of every platform runs on request only; a Cairn release is built by cairn-release.yml
+on:
+  workflow_dispatch:
 
 jobs:
   build-mod:

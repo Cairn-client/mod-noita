@@ -1,0 +1,107 @@
+name: Cairn release
+
+# A Cairn release is a bare X.Y.Z tag on master. It builds this project's own mod and proxy (as release.yml does), puts them in a
+# Cairn mod pack (tools/cairn/Build-Pack.ps1) and publishes the pack, pack-index.json and game.json: the Cairn launcher reads the
+# index to install and update this mod. RELEASE_CHANNEL=beta publishes a pre-release (only players who chose beta are offered it).
+on:
+  push:
+    tags: ['[0-9]+.[0-9]+.[0-9]+']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-mod:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: i686-pc-windows-gnu
+          toolchain: 'nightly'
+      - name: Install extra deps
+        run: sudo apt-get update && sudo apt-get install -y gcc-mingw-w64-i686
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: ewext -> target
+      - name: Build ewext
+        run: |
+          rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+          cargo +nightly build --release --target=i686-pc-windows-gnu
+        working-directory: ./ewext
+      - name: Copy ewext
+        run: cp ewext/target/i686-pc-windows-gnu/release/ewext.dll quant.ew/ewext.dll
+      - name: Create archive
+        run: python scripts/ci_make_archives.py mod
+      - uses: actions/upload-artifact@v4
+        with:
+          name: quant.ew.zip
+          path: target/quant.ew.zip
+
+  build-proxy:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: noita_proxy -> target
+      - name: Build the proxy
+        run: cargo build --release
+        working-directory: ./noita_proxy
+      - name: Create archive
+        run: python scripts/ci_make_archives.py windows
+      - uses: actions/upload-artifact@v4
+        with:
+          name: noita_proxy-win.zip
+          path: target/noita_proxy-win.zip
+
+  pack:
+    needs: [build-mod, build-proxy]
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+
+      - name: The tag must be on master and equal VERSION
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        run: |
+          git fetch origin master
+          git merge-base --is-ancestor $env:GITHUB_SHA origin/master
+          if ($LASTEXITCODE -ne 0) { throw "tag $env:GITHUB_REF_NAME is not on master" }
+          $v = (Get-Content VERSION -TotalCount 1).Trim()
+          if ($v -ne $env:GITHUB_REF_NAME) { throw "tag $env:GITHUB_REF_NAME is not VERSION ($v)" }
+
+      - uses: actions/download-artifact@v4
+        with: { name: quant.ew.zip, path: dl }
+      - uses: actions/download-artifact@v4
+        with: { name: noita_proxy-win.zip, path: dl }
+
+      - name: Build the pack
+        shell: pwsh
+        run: ./tools/cairn/Build-Pack.ps1 -ModZip dl/quant.ew.zip -ProxyZip dl/noita_proxy-win.zip
+
+      - name: Changelog
+        shell: pwsh
+        run: ./tools/cairn/New-ReleaseNotes.ps1 -OutFile notes.md -Tag $env:GITHUB_REF_NAME
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: cairn-pack
+          path: |
+            release/Cairn-Pack-noita-*.zip
+            release/pack-index.json
+            game/game.json
+
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $assets = @("release/Cairn-Pack-noita-$env:GITHUB_REF_NAME.zip", 'release/pack-index.json') + (Get-ChildItem game -File | ForEach-Object { $_.FullName })
+          $flags = @()
+          if ((Get-Content RELEASE_CHANNEL -Raw).Trim() -eq 'beta') { $flags += '--prerelease' }
+          gh release create $env:GITHUB_REF_NAME @assets --title $env:GITHUB_REF_NAME --notes-file notes.md --verify-tag @flags

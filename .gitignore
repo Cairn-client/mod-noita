@@ -8,3 +8,8 @@ save_state
 # Nix
 /result
 /result-man
+
+# Cairn pack build output
+/release/
+/dl/
+/notes.md

@@ -1,0 +1,34 @@
+{
+  "schema": 1,
+  "id": "noita",
+  "name": "Noita",
+  "developer": "Nolla Games",
+  "franchise": "Noita",
+  "steamAppId": 881100,
+  "exe": "noita.exe",
+  "description": "Play Noita together. Noita Entangled Worlds shares one world between players: their positions, health, perks, wands, enemies and even the pixels of the cave.",
+  "accent": "#E8A35A",
+  "hostSteps": [
+    "Download the mod above. Cairn puts it in Noita's folder and keeps it up to date.",
+    "Press Play. Noita Entangled Worlds' own window opens.",
+    "In that window choose Host, then Start: it starts Noita for you.",
+    "Share the lobby code it shows with your friends, or invite them on Steam."
+  ],
+  "joinSteps": [
+    "Download the mod above, the same version as the host's, then press Play.",
+    "In Entangled Worlds' window choose Join and enter the host's lobby code.",
+    "It starts Noita for you and you arrive in the host's world."
+  ],
+  "features": [
+    { "title": "Sessions", "items": [
+      { "name": "Host and join", "detail": "Join by Steam lobby code or by address. Both players need the same version of the mod." },
+      { "name": "Same world", "detail": "One world for everyone: the same cave, pixel by pixel, enemies and items." },
+      { "name": "Kept up to date", "detail": "Cairn installs the mod in Noita's folder and updates it when a new version is released." }
+    ] },
+    { "title": "Players", "items": [
+      { "name": "Everything they carry", "detail": "Positions, health, perks, wands and inventories are shared.", "status": "ready" },
+      { "name": "Wands and items", "detail": "A wand or a potion one player throws can be picked up by another.", "status": "ready" },
+      { "name": "Fungal shifts and polymorphing", "detail": "These are shared across players.", "status": "ready" }
+    ] }
+  ]
+}
