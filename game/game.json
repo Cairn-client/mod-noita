@@ -9,6 +9,12 @@
   "description": "Play Noita together. Noita Entangled Worlds shares one world between players: their positions, health, perks, wands, enemies and even the pixels of the cave.",
   "accent": "#E8A35A",
   "ownSession": true,
+  "setup": [
+    { "kind": "steam-running" },
+    { "kind": "steam-app", "appId": 881100, "title": "Noita", "detail": "Install Noita from your Steam library." },
+    { "kind": "game-found" },
+    { "kind": "mod-installed", "detail": "Download the mod above: Cairn puts it in Noita's folder." }
+  ],
   "hostSteps": [
     "Download the mod above. Cairn puts it in Noita's folder and keeps it up to date.",
     "Press Play. Noita Entangled Worlds' own window opens.",
