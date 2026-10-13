@@ -57,8 +57,21 @@ jobs:
           name: noita_proxy-win.zip
           path: target/noita_proxy-win.zip
 
+  # the launcher's own small program for Noita (saves, logs): a native executable, built from tools/cairn/NoitaBridge
+  build-bridge:
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the bridge
+        run: dotnet publish tools/cairn/NoitaBridge -c Release -r win-x64 -o bridge-out
+      - uses: actions/upload-artifact@v4
+        with:
+          name: noita-bridge
+          path: bridge-out/noita-bridge.exe
+          if-no-files-found: error
+
   pack:
-    needs: [build-mod, build-proxy]
+    needs: [build-mod, build-proxy, build-bridge]
     runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
@@ -78,10 +91,12 @@ jobs:
         with: { name: quant.ew.zip, path: dl }
       - uses: actions/download-artifact@v4
         with: { name: noita_proxy-win.zip, path: dl }
+      - uses: actions/download-artifact@v4
+        with: { name: noita-bridge, path: dl }
 
       - name: Build the pack
         shell: pwsh
-        run: ./tools/cairn/Build-Pack.ps1 -ModZip dl/quant.ew.zip -ProxyZip dl/noita_proxy-win.zip
+        run: ./tools/cairn/Build-Pack.ps1 -ModZip dl/quant.ew.zip -ProxyZip dl/noita_proxy-win.zip -Bridge dl/noita-bridge.exe
 
       - name: Changelog
         shell: pwsh

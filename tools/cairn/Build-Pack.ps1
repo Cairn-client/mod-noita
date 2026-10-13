@@ -9,7 +9,7 @@
     (the program that hosts or joins, then starts Noita) is the pack's companion, kept in the launcher's pack store.
 
       mod\   the contents of quant.ew.zip (the mod folder, including files\version.lua that the proxy checks)
-      bin\   noita_proxy.exe and steam_api64.dll from noita_proxy-win.zip
+      bin\   noita_proxy.exe and steam_api64.dll from noita_proxy-win.zip, and noita-bridge.exe (the launcher's saves and logs program)
       pack.json      the contract with the launcher
       manifest.txt   MOD|<path>|<size>|<sha256> and BIN|<path>|<size>|<sha256>, one line per file
 
@@ -19,7 +19,8 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string] $ModZip,
-    [Parameter(Mandatory)][string] $ProxyZip
+    [Parameter(Mandatory)][string] $ProxyZip,
+    [Parameter(Mandatory)][string] $Bridge    # noita-bridge.exe, built from tools\cairn\NoitaBridge (the launcher's program for Noita: saves, logs)
 )
 
 $ErrorActionPreference = 'Stop'
@@ -53,13 +54,14 @@ function Expand-Safe([string] $zipPath, [string] $dest, [string[]] $only) {
 
 Expand-Safe $ModZip (Join-Path $stage 'mod')
 Expand-Safe $ProxyZip (Join-Path $stage 'bin') @('noita_proxy.exe', 'steam_api64.dll')
-foreach ($n in @('bin\noita_proxy.exe', 'bin\steam_api64.dll', 'mod\init.lua', 'mod\mod.xml', 'mod\files\version.lua', 'mod\ewext.dll')) {
+Copy-Item $Bridge (Join-Path $stage 'bin\noita-bridge.exe')
+foreach ($n in @('bin\noita_proxy.exe', 'bin\steam_api64.dll', 'bin\noita-bridge.exe', 'mod\init.lua', 'mod\mod.xml', 'mod\files\version.lua', 'mod\ewext.dll')) {
     if (-not (Test-Path (Join-Path $stage $n))) { throw "the pack is missing $n" }
 }
 
 function Get-Sha256([string] $Path) { (Get-FileHash $Path -Algorithm SHA256).Hash.ToLowerInvariant() }
 
-$launcherMin = '0.3.11'
+$launcherMin = '0.3.27'   # the launcher that runs a pack's own program (saves, logs) for an external mod
 $packJson = [ordered]@{
     schema              = 2
     id                  = 'noita'
@@ -70,6 +72,7 @@ $packJson = [ordered]@{
     installDir          = 'mods/quant.ew'
     companion           = 'bin/noita_proxy.exe'
     companionStartsGame = $true
+    optionsProgram      = 'bin/noita-bridge.exe'
     launcherMin         = $launcherMin
 }
 [IO.File]::WriteAllText((Join-Path $stage 'pack.json'), (($packJson | ConvertTo-Json) + "`n"), (New-Object System.Text.UTF8Encoding($false)))

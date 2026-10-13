@@ -13,3 +13,7 @@ save_state
 /release/
 /dl/
 /notes.md
+
+# the bridge's build output
+/tools/cairn/NoitaBridge/bin/
+/tools/cairn/NoitaBridge/obj/
